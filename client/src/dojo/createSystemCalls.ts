@@ -10,11 +10,11 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
     { execute }: SetupNetworkResult,
-    { Position, PlayerID, Energy }: ClientComponents
+    { Position, PlayerID }: ClientComponents
 ) {
     const spawn = async (props: SpawnSystemProps) => {
         try {
-            await execute(props.signer, "actions", "spawn", [props.rps]);
+            await execute(props.signer, "actions", "spawn", []);
         } catch (e) {
             console.error(e);
         }
@@ -28,18 +28,16 @@ export function createSystemCalls(
             BigInt(signer.address),
         ]) as Entity;
 
-        // get the RPS ID associated with the PlayerID
-        const rpsId = getComponentValue(PlayerID, playerID)?.id;
+        // get the ID associated with the PlayerID
+        const entityId = getComponentValue(PlayerID, playerID)?.id;
 
-        // get the RPS entity
-        const rpsEntity = getEntityIdFromKeys([
-            BigInt(rpsId?.toString() || "0"),
+        // get the entity
+        const playerEntity = getEntityIdFromKeys([
+            BigInt(entityId?.toString() || "0"),
         ]);
 
-        // get the RPS position
-        const position = getComponentValue(Position, rpsEntity);
-
-        let currentEnergyAmt = getComponentValue(Energy, rpsEntity)?.amt || 0;
+        // get the position
+        const position = getComponentValue(Position, playerEntity);
 
         // update the position with the direction
         const new_position = updatePositionWithDirection(
@@ -50,15 +48,8 @@ export function createSystemCalls(
         // add an override to the position
         const positionId = uuid();
         Position.addOverride(positionId, {
-            entity: rpsEntity,
-            value: { id: rpsId, x: new_position.x, y: new_position.y },
-        });
-
-        // add an override to the energy
-        const energyId = uuid();
-        Energy.addOverride(energyId, {
-            entity: rpsEntity,
-            value: { id: rpsId, amt: currentEnergyAmt-- },
+            entity: playerEntity,
+            value: { id: entityId, x: new_position.x, y: new_position.y },
         });
 
         try {
@@ -82,10 +73,8 @@ export function createSystemCalls(
         } catch (e) {
             console.log(e);
             Position.removeOverride(positionId);
-            Energy.removeOverride(energyId);
         } finally {
             Position.removeOverride(positionId);
-            Energy.removeOverride(energyId);
         }
     };
 

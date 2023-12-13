@@ -11,7 +11,6 @@ import { tileCoordToPixelCoord } from "@latticexyz/phaserx";
 import {
     Animations,
     ORIGIN_OFFSET,
-    RPSSprites,
     TILE_HEIGHT,
     TILE_WIDTH,
 } from "../config/constants";
@@ -24,17 +23,12 @@ export const move = (layer: PhaserLayer) => {
             Main: { objectPool, camera },
         },
         networkLayer: {
-            components: { Position, RPSType, PlayerAddress },
+            components: { Position, PlayerAddress },
             account: { address: playerAddress },
         },
     } = layer;
 
-    defineSystem(world, [Has(Position), Has(RPSType)], ({ entity }: any) => {
-        const rpsType = getComponentValueStrict(
-            RPSType,
-            entity.toString() as Entity
-        );
-
+    defineSystem(world, [Has(Position)], ({ entity }: any) => {
         const position = getComponentValueStrict(
             Position,
             entity.toString() as Entity
@@ -51,19 +45,7 @@ export const move = (layer: PhaserLayer) => {
 
         const player = objectPool.get(entity_uniform, "Sprite");
 
-        let animation = "";
-        switch (String.fromCharCode(rpsType.rps)) {
-            case RPSSprites.Rock:
-                animation = Animations.RockIdle;
-                break;
-            case RPSSprites.Paper:
-                animation = Animations.PaperIdle;
-                break;
-            case RPSSprites.Scissors:
-                animation = Animations.ScissorsIdle;
-                break;
-        }
-
+        let animation = Animations.SoldierIdle;
         player.setComponent({
             id: "animation",
             once: (sprite) => {

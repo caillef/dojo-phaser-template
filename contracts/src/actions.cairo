@@ -18,7 +18,7 @@ mod actions {
 
     // import models
     use emojiman::models::{
-        GAME_DATA_KEY, GameData, Direction, Vec2, Position, PlayerAtPosition, RPSType, Energy,
+        GAME_DATA_KEY, GameData, Direction, Vec2, Position, PlayerAtPosition,
         PlayerID, PlayerAddress
     };
 
@@ -27,8 +27,7 @@ mod actions {
 
     // import config
     use emojiman::config::{
-        INITIAL_ENERGY, RENEWED_ENERGY, MOVE_ENERGY_COST, X_RANGE, Y_RANGE, ORIGIN_OFFSET,
-        MAP_AMPLITUDE
+        X_RANGE, Y_RANGE, ORIGIN_OFFSET
     };
 
     // import integer
@@ -47,7 +46,7 @@ mod actions {
     #[external(v0)]
     impl ActionsImpl of IActions<ContractState> {
         // Spawns the player on to the map
-        fn spawn(self: @ContractState, rps: u8) {
+        fn spawn(self: @ContractState) {
             // world dispatcher
             let world = self.world_dispatcher.read();
 
@@ -63,9 +62,6 @@ mod actions {
             // NOTE: save game_data model with the set! macro
             set!(world, (game_data));
 
-            // assert rps type
-            assert(rps == 'r' || rps == 'p' || rps == 's', 'only r, p or s type allowed');
-
             // get player id 
             let mut player_id = get!(world, player, (PlayerID)).id;
 
@@ -79,14 +75,11 @@ mod actions {
                 clear_player_at_position(world, pos.x, pos.y);
             }
 
-            // set player type
-            set!(world, (RPSType { id: player_id, rps }));
-
             // spawn on random position
             let (x, y) = spawn_coords(world, player.into(), player_id.into());
 
             // set player position
-            player_position_and_energy(world, player_id, x, y, INITIAL_ENERGY);
+            player_position(world, player_id, x, y);
         }
 
         // Queues move for player to be processed later
@@ -100,8 +93,8 @@ mod actions {
             // player id
             let id = get!(world, player, (PlayerID)).id;
 
-            // player position and energy
-            let (pos, energy) = get!(world, id, (Position, Energy));
+            // player position
+            let pos = get!(world, id, Position);
 
             // Clear old position
             clear_player_at_position(world, pos.x, pos.y);
@@ -118,28 +111,10 @@ mod actions {
                 x <= max_x.try_into().unwrap() && y <= max_y.try_into().unwrap(), 'Out of bounds'
             );
 
-            // resolve encounter
             let adversary = player_at_position(world, x, y);
+            assert(adversary == 0, 'Cell occupied');
 
-            let tile = tile_at_position(x - ORIGIN_OFFSET.into(), y - ORIGIN_OFFSET.into());
-            let mut move_energy_cost = MOVE_ENERGY_COST;
-            if tile == 3 {
-                // Use more energy to go through ocean tiles
-                move_energy_cost = MOVE_ENERGY_COST * 3;
-            }
-
-            // assert energy
-            assert(energy.amt >= move_energy_cost, 'Not enough energy');
-
-            if 0 == adversary {
-                // Empty cell, move
-                player_position_and_energy(world, id, x, y, energy.amt - move_energy_cost);
-            } else {
-                if encounter(world, id, adversary) {
-                    // Move the player
-                    player_position_and_energy(world, id, x, y, energy.amt + RENEWED_ENERGY);
-                }
-            }
+            player_position(world, id, x, y);
         }
 
         // ----- ADMIN FUNCTIONS -----
@@ -195,9 +170,9 @@ mod actions {
         get!(world, (x, y), (PlayerAtPosition)).id
     }
 
-    // @dev: Sets player position and energy
-    fn player_position_and_energy(world: IWorldDispatcher, id: u8, x: u8, y: u8, amt: u8) {
-        set!(world, (PlayerAtPosition { x, y, id }, Position { x, y, id }, Energy { id, amt },));
+    // @dev: Sets player position
+    fn player_position(world: IWorldDispatcher, id: u8, x: u8, y: u8) {
+        set!(world, (PlayerAtPosition { x, y, id }, Position { x, y, id }));
     }
 
     // @dev: Kills player
@@ -217,71 +192,10 @@ mod actions {
         world.delete_entity('PlayerAddress', entity_keys, layout.span());
 
         set!(world, (PlayerID { player, id: 0 }));
-        set!(world, (Position { id, x: 0, y: 0 }, RPSType { id, rps: 0 }));
+        set!(world, (Position { id, x: 0, y: 0 }));
 
         // Remove player components
-        world.delete_entity('RPSType', entity_keys, layout.span());
         world.delete_entity('Position', entity_keys, layout.span());
-        world.delete_entity('Energy', entity_keys, layout.span());
-    }
-
-    // @dev: Handles player encounters
-    // if the player dies returns false
-    // if the player kills the other player returns true
-    fn encounter(world: IWorldDispatcher, player: u8, adversary: u8) -> bool {
-        let ply_type = get!(world, player, (RPSType)).rps;
-        let adv_type = get!(world, adversary, (RPSType)).rps;
-        if encounter_win(ply_type, adv_type) {
-            // adversary dies
-            player_dead(world, adversary);
-            true
-        } else {
-            // player dies
-            player_dead(world, player);
-            false
-        }
-    }
-
-    // @dev: Returns tile id at position
-    fn tile_at_position(x: u8, y: u8) -> u8 {
-        let vec = Vec3Trait::new(
-            FixedTrait::from_felt(x.into()) / FixedTrait::from_felt(MAP_AMPLITUDE.into()),
-            FixedTrait::from_felt(0),
-            FixedTrait::from_felt(y.into()) / FixedTrait::from_felt(MAP_AMPLITUDE.into())
-        );
-
-        // compute simplex noise
-        let simplex_value = simplex3::noise(vec);
-
-        // compute the value between -1 and 1 to a value between 0 and 1
-        let fixed_value = (simplex_value + FixedTrait::from_unscaled_felt(1))
-            / FixedTrait::from_unscaled_felt(2);
-
-        // make it an integer between 0 and 100
-        let value: u8 = FixedTrait::floor(fixed_value * FixedTrait::from_unscaled_felt(100))
-            .try_into()
-            .unwrap();
-
-        if (value > 70) {
-            return 3; // Sea
-        } else if (value > 60) {
-            return 2; // Desert
-        } else if (value > 53) {
-            return 1; // Forest
-        } else {
-            return 0; // Plain
-        }
-    }
-
-    // @dev: Returns true if player wins
-    fn encounter_win(ply_type: u8, adv_type: u8) -> bool {
-        assert(adv_type != ply_type, 'occupied by same type');
-        if (ply_type == 'r' && adv_type == 's')
-            || (ply_type == 'p' && adv_type == 'r')
-            || (ply_type == 's' && adv_type == 'p') {
-            return true;
-        }
-        false
     }
 
     // @dev: Returns random spawn coordinates
@@ -309,5 +223,22 @@ mod actions {
             }
         };
         (x, y)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use debug::PrintTrait;
+    use array::{Array, ArrayTrait};
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_cc() {
+        let mut list: Array<felt252> = ArrayTrait::new();
+        list.append(1);
+        let address = starknet::contract_address_const::<0x056834208d6a7cc06890a80ce523b5776755d68e960273c9ef3659b5f74fa494>();
+        let method = 'generate_dungeon';
+        let res = starknet::call_contract_syscall(address, method, list.span());
+        res.unwrap();
     }
 }

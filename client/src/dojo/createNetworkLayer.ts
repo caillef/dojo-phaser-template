@@ -7,7 +7,7 @@ export type NetworkLayer = Awaited<ReturnType<typeof createNetworkLayer>>;
 export const createNetworkLayer = async () => {
     const { components, systemCalls, network } = await setup();
 
-    const { Position, PlayerID, Energy, RPSType, PlayerAddress } =
+    const { Position, PlayerID, PlayerAddress } =
         network.contractComponents;
 
     const { burnerManager, toriiClient, account } = network;
@@ -25,15 +25,7 @@ export const createNetworkLayer = async () => {
                 keys,
             });
             models.push({
-                model: RPSType,
-                keys,
-            });
-            models.push({
                 model: PlayerAddress,
-                keys,
-            });
-            models.push({
-                model: Energy,
                 keys,
             });
         }

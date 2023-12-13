@@ -4,7 +4,7 @@
 
 #[starknet::interface]
 trait IActions<TContractState> {
-    fn spawn(self: @TContractState, rps: u8);
+    fn spawn(self: @TContractState);
     fn move(self: @TContractState, dir: emojiman::models::Direction);
     fn cleanup(self: @TContractState);
 }

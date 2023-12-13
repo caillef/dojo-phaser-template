@@ -1,5 +1,5 @@
 import { useDojo } from "./hooks/useDojo";
-import { ImagePaths, RPSSprites } from "../phaser/config/constants";
+import { ImagePaths, Sprites } from "../phaser/config/constants";
 import { Button } from "./button";
 import { useUIStore } from "../store";
 import { useEffect } from "react";
@@ -27,7 +27,7 @@ export const Spawn = () => {
 
     return (
         <div className="flex space-x-3 justify-between p-2 flex-wrap">
-            {Object.keys(RPSSprites)
+            {Object.keys(Sprites)
                 .filter((key) => isNaN(Number(key)))
                 .map((key) => (
                     <div key={key}>
@@ -35,10 +35,7 @@ export const Spawn = () => {
                             variant={"default"}
                             onClick={async () => {
                                 await spawn({
-                                    signer: account,
-                                    rps: RPSSprites[
-                                        key as keyof typeof RPSSprites
-                                    ],
+                                    signer: account
                                 });
 
                                 setLoggedIn();
@@ -49,9 +46,7 @@ export const Spawn = () => {
                                 className="w-8 h-8"
                                 src={
                                     ImagePaths[
-                                        RPSSprites[
-                                            key as keyof typeof RPSSprites
-                                        ]
+                                        Sprites.Soldier
                                     ]
                                 }
                             />

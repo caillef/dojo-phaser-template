@@ -53,30 +53,6 @@ struct Position {
     y: u8
 }
 
-// Structure representing a Rock, Paper, Scissors type game with an ID and a value
-#[derive(Model, Copy, Drop, Serde)]
-struct RPSType {
-    #[key]
-    id: u8,
-    rps: u8,
-}
-
-#[generate_trait]
-impl RPSTypeImpl of RPSTypeTrait {
-    fn get_type(self: RPSType) -> u8 {
-        self.rps
-    }
-}
-
-
-// Structure for storing energy amount with an ID
-#[derive(Model, Copy, Drop, Serde)]
-struct Energy {
-    #[key]
-    id: u8,
-    amt: u8,
-}
-
 // Structure representing a player's ID with a ContractAddress
 #[derive(Model, Copy, Drop, Serde)]
 struct PlayerID {

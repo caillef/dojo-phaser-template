@@ -9,6 +9,5 @@ export function createClientComponents({
     return {
         ...contractComponents,
         Position: overridableComponent(contractComponents.Position),
-        Energy: overridableComponent(contractComponents.Energy),
     };
 }

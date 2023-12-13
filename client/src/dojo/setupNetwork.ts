@@ -3,7 +3,7 @@ import { world } from "./world";
 import { RPCProvider } from "@dojoengine/core";
 import { Account, num } from "starknet";
 import dev_manifest from "../../../contracts/target/dev/manifest.json";
-import prod_manifest from "../../../contracts/target/release/manifest.json";
+// import prod_manifest from "../../../contracts/target/release/manifest.json";
 import * as torii from "@dojoengine/torii-client";
 import { createBurner } from "./createBurner";
 
@@ -19,7 +19,8 @@ export async function setupNetwork() {
 
     const provider = new RPCProvider(
         VITE_PUBLIC_WORLD_ADDRESS,
-        VITE_PUBLIC_DEV === "true" ? dev_manifest : prod_manifest,
+        dev_manifest,
+        // VITE_PUBLIC_DEV === "true" ? dev_manifest : prod_manifest,
         VITE_PUBLIC_NODE_URL
     );
 

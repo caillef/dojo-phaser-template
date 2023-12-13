@@ -1,6 +1,5 @@
 import { store } from "../store";
 import { CreateAccount } from "./CreateAccount";
-import { EnergyLevels } from "./EnergyLevels";
 
 export const UI = () => {
     const layers = store((state) => {
@@ -14,7 +13,6 @@ export const UI = () => {
 
     return (
         <div className="absolute inset-0 pointer-events-none">
-            <EnergyLevels />
             <CreateAccount />
         </div>
     );

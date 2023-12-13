@@ -13,7 +13,7 @@ import {
     Scenes,
     TILE_HEIGHT,
     TILE_WIDTH,
-    Animations,
+    Animations
 } from "./constants";
 
 const ANIMATION_INTERVAL = 200;
@@ -64,33 +64,13 @@ export const phaserConfig = {
             },
             animations: [
                 {
-                    key: Animations.RockIdle,
+                    key: Animations.SoldierIdle,
                     assetKey: Assets.MainAtlas,
                     startFrame: 0,
                     endFrame: 0,
                     frameRate: 6,
                     repeat: -1,
                     prefix: "sprites/rock/",
-                    suffix: ".png",
-                },
-                {
-                    key: Animations.ScissorsIdle,
-                    assetKey: Assets.MainAtlas,
-                    startFrame: 0,
-                    endFrame: 0,
-                    frameRate: 6,
-                    repeat: -1,
-                    prefix: "sprites/scissors/",
-                    suffix: ".png",
-                },
-                {
-                    key: Animations.PaperIdle,
-                    assetKey: Assets.MainAtlas,
-                    startFrame: 0,
-                    endFrame: 0,
-                    frameRate: 6,
-                    repeat: -1,
-                    prefix: "sprites/paper/",
                     suffix: ".png",
                 },
             ],

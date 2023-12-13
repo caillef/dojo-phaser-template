@@ -25,7 +25,7 @@ echo actions : $ACTIONS_ADDRESS
 echo "---------------------------------------------------------------------------"
 
 # enable system -> component authorizations
-COMPONENTS=("Position" "MovesQueue" "RPSType" "GameData" "PlayerID" "Energy" "PlayerAddress" "PlayerAtPosition" )
+COMPONENTS=("Position" "MovesQueue" "GameData" "PlayerID" "PlayerAddress" "PlayerAtPosition" )
 
 for component in ${COMPONENTS[@]}; do
     sozo auth writer $component $ACTIONS_ADDRESS --world $WORLD_ADDRESS --rpc-url $RPC_URL

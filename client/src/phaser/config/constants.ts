@@ -7,9 +7,7 @@ export enum Maps {
 }
 
 export enum Animations {
-    RockIdle = "RockIdle",
-    PaperIdle = "PaperIdle",
-    ScissorsIdle = "ScissorsIdle",
+    SoldierIdle = "SoldierIdle",
 }
 
 // image addresses
@@ -18,16 +16,8 @@ export enum Sprites {
     Soldier,
 }
 
-export enum RPSSprites {
-    Rock = "r",
-    Paper = "p",
-    Scissors = "s",
-}
-
-export const ImagePaths: { [key in RPSSprites]: string } = {
-    [RPSSprites.Rock]: "rock.png",
-    [RPSSprites.Paper]: "paper.png",
-    [RPSSprites.Scissors]: "scissors.png",
+export const ImagePaths: { [key in Sprites]: string } = {
+    [Sprites.Soldier]: "rock.png",
 };
 
 export enum Assets {
@@ -48,5 +38,3 @@ export const TILE_WIDTH = 32;
 
 // contract offset so we don't overflow
 export const ORIGIN_OFFSET = 100;
-
-export const MAP_AMPLITUDE = 16;
